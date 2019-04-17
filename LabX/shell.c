@@ -57,6 +57,7 @@ int parseCommand(char *, struct command_t *);
 void printPrompt();
 void readCommand(char *);
 void parseShortcut(struct command_t*);
+void manual();
 // void wait(int*); 
 
 int main(int argc, char *argv[]) {
@@ -110,7 +111,7 @@ int parseCommand(char *cLine, struct command_t *cmd) {
    cmd->argv[argc] = (char *) malloc(MAX_ARG_LEN);
    /* Fill argv[] */
    while ((cmd->argv[argc] = strsep(clPtr, WHITESPACE)) != NULL) {
-      cmd->argv[++argc] = (char *) malloc(MAX_ARG_LEN);
+      cmd->argv[++argc] = (char *) malloc(sizeof(char) * MAX_ARG_LEN);
    }
 
    printf("%s\n", cmd->argv[0]);
@@ -162,12 +163,47 @@ void parseShortcut(struct command_t* cmd) {
       strcpy(cmd->argv[0], "rm");      
    } else if (strcmp(cmd->argv[0], "E") == 0) { 
       strcpy(cmd->argv[0], "echo");
+      printf("argv[0]: %s\n", cmd->argv[0]);
+      printf("argv[1]: %s\n", cmd->argv[1]);
+      // printf("size argv[0]: %d\n", sizeof(cmd->argv[0]));
    } else if (strcmp(cmd->argv[0], "H") == 0) { 
       // TODO print my user manual
-   } 
-   else { 
+      manual();
+   } else if (strcmp(cmd->argv[0], "L") == 0) { 
+      strcpy(cmd->argv[0], "ls");
+      strcpy(cmd->argv[1], "-a");
+      // ls -a
+   } else if (strcmp(cmd->argv[0], "M") == 0) { 
+      // touch file
+   } else if (strcmp(cmd->argv[0], "P") == 0) { 
+      // TODO print contents of file to screen
+   } else if (strcmp(cmd->argv[0], "Q") == 0) { 
+      // TODO quit the shell
+   } else if (strcmp(cmd->argv[0], "S") == 0) { 
+      // Launch a web browser, probs firefox
+   } else if (strcmp(cmd->argv[0], "W") == 0) { 
+      strcpy(cmd->argv[0], "clear");
+      // clear
+   } else if (strcmp(cmd->argv[0], "X") == 0) { 
+      // TODO execute file 
+   } else { 
       printf("some other command was found\n");
-      printf("%s\n", cmd->argv[1]);
-      printf("%s\n", cmd->argv[2]);   
+      // printf("argv[1]: %s\n", cmd->argv[1]);
+      // printf("argv[2]: %s\n", cmd->argv[2]);   
    }
+}
+
+void manual() { 
+   printf("manual printed\n");
+   printf("C [file1] [file2] - Copy file1 to file2\n\n");
+   printf("D [file] - delete the file\n\n");
+   printf("E [comment] - echo the given comment\n\n");
+   printf("H - Display this help prompt\n\n");
+   printf("L - List the contents of the directory\n\n");
+   printf("M [filename] - Create a file with the given name\n\n");
+   printf("P [file] - Print the contents of the given file\n\n");
+   printf("Q - Quit the shell\n\n");
+   printf("S - Launch Firefox\n\n");
+   printf("W - Clear thet screen\n\n");
+   printf("X [program] - Execute the given program\n\n");
 }
