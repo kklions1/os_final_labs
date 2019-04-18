@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "unistd.h": "c",
-        "cstring": "cpp"
+        "cstring": "cpp",
+        "iostream": "cpp"
     }
 }

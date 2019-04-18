@@ -48,9 +48,9 @@ public:
     }
 };
 
-int parseCommand(char* , command_t*);
+int parseCommand(std::string& , command_t*);
 void printPrompt();
-void readCommand(char*);
+void readCommand(std::string&);
 void parseShortcut(command_t*);
 void manual();
 
@@ -58,21 +58,17 @@ int main() {
     int pid;
     int status;
     char cmdLine[MAX_LINE_LEN];
+    std::string input;
     command_t command; 
 
-    while (1) { 
+    while (true) { 
         printPrompt();
-        readCommand(cmdLine);
-        parseCommand(cmdLine, &command);
+        readCommand(input);
+        parseCommand(input, &command);
 
-        command.print();
         if ((pid = fork()) == 0) { 
-            std::cout << "Hello from child process\n";
             execvp(command.name.c_str(), command.argv);
         }
-
-        // command.argv[command.argc] = nullptr;
-        // manual();
 
         while(wait(&status) == pid) { 
 
@@ -86,16 +82,13 @@ void printPrompt() {
     std::cout << "Linux khk8|> ";
 }
 
-void readCommand(char* buffer) { 
-    fgets(buffer, MAX_LINE_LEN, stdin);
+void readCommand(std::string& buffer) { 
+    // fgets(buffer, MAX_LINE_LEN, stdin);
+    std::getline(std::cin, buffer);
 }
 
-int parseCommand(char* cLine, command_t* command) { 
-    int argc;
-
-    std::string cLineString(cLine);
-    // std::cout << cLineString << std::endl;
-    
+int parseCommand(std::string& cLineString, command_t* command) { 
+    // std::string cLineString(cLine);    
     std::size_t index = 0;
     char delim = ' ';
     std::string token;
@@ -107,6 +100,7 @@ int parseCommand(char* cLine, command_t* command) {
     }
 
     while ((index = cLineString.find(delim)) != std::string::npos) { 
+        
         token = cLineString.substr(0, index);
         command->argumentList.push_back(token);
         cLineString.erase(0, index + 1);
@@ -118,25 +112,17 @@ int parseCommand(char* cLine, command_t* command) {
         }
     }
 
-    std::cout << "Leftover arugments: ";
-    std::cout << cLineString << std::endl;
+    parseShortcut(command);
 
-    std::cout << "Command line argument list: " << std::endl;
-    for (int i = 0; i < command->argumentList.size(); ++i) { 
-        std::cout << command->argumentList[i] << std::endl;
-    }
-    
-    command->argc = command->argumentList.size();
     command->name = command->argumentList[0];
-    int i = 0;
-    for ( ; i < command->argumentList.size(); ++i) {
-        command->argv[i] = new char[MAX_ARG_LEN]; 
-        strcpy(command->argv[i], command->argumentList[i].c_str());
+    command->argc = 0;
+
+    for ( ; command->argc < command->argumentList.size(); command->argc++) {
+        command->argv[command->argc] = new char[MAX_ARG_LEN]; 
+        strcpy(command->argv[command->argc], command->argumentList[command->argc].c_str());
     }
 
-    command->argv[i] = nullptr;
-
-    // TODO parse shortcuts
+    command->argv[command->argc] = nullptr;
 
     return 1;
 }
@@ -155,4 +141,46 @@ void manual() {
     printf("S - Launch Firefox\n\n");
     printf("W - Clear thet screen\n\n");
     printf("X [program] - Execute the given program\n\n");
+}
+
+void parseShortcut(command_t* command) { 
+    if (command->argumentList[0] == std::string("C")) { 
+        command->argumentList[0].replace(command->argumentList[0].begin(), command->argumentList[0].end(), std::string("cp"));
+    
+    } else if (command->argumentList[0] == "E") {    
+        command->argumentList[0].replace(command->argumentList[0].begin(), command->argumentList[0].end(), std::string("echo"));
+
+    } else if (command->argumentList[0] == "H") { 
+        manual();
+
+    } else if (command->argumentList[0] == "L") { 
+        command->argumentList[0].replace(command->argumentList[0].begin(), command->argumentList[0].end(), std::string("ls"));
+        command->argumentList.push_back(std::string("-la"));
+
+    } else if (command->argumentList[0] == "M") { 
+        command->argumentList[0].replace(command->argumentList[0].begin(), command->argumentList[0].end(), std::string("nano"));
+
+    } else if (command->argumentList[0] == "P") { 
+        command->argumentList[0].replace(command->argumentList[0].begin(), command->argumentList[0].end(), std::string("more"));
+
+    } else if (command->argumentList[0] == "Q") { 
+        std::cout << "Goodbye!\n";
+        exit(0);
+
+    } else if (command->argumentList[0] == "S") { 
+        command->argumentList[0].replace(command->argumentList[0].begin(), command->argumentList[0].end(), std::string("firefox"));
+
+    } else if (command->argumentList[0] == "W") { 
+        command->argumentList[0].replace(command->argumentList[0].begin(), command->argumentList[0].end(), std::string("clear"));
+
+    } else if (command->argumentList[0] == "X") { 
+        std::string file = command->argumentList[1];
+        std::string exec = "./" + file;
+        command->argumentList.clear();
+        command->argumentList.push_back(exec);
+
+    } else if (command->argumentList[0] == "D") { 
+        command->argumentList[0].replace(command->argumentList[0].begin(), command->argumentList[0].end(), std::string("rm"));
+
+    }
 }

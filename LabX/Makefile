@@ -1,3 +1,3 @@
-all: shell.c shell.cpp
-	gcc shell.c -o shell
-	g++ shell.cpp -o main -std=c++11
+all: hello.c shell.cpp
+	gcc hello.c -o hello
+	g++ shell.cpp -o shell -std=c++11
